@@ -98,4 +98,4 @@ var constructTree = function (value) {
     };
 }
 
-getDictionary('/google-10000-english.txt');
+getDictionary('/words.txt');
