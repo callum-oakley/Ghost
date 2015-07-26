@@ -1,4 +1,4 @@
-// depends on 'helpers.js'
+// depends on 'helpers.js' and 'ramda.js'
 
 // First we get the dictionary from the path specified at the bottom of the
 // file. Nothing very interesting happens in this function.
@@ -40,41 +40,35 @@ var ghost = function (dictionary) {
 
 // Delete all words of length <=2 and all unreachable words.
 var processDictionary = function (dictionary) {
-    dictionary = dictionary.filter(function (w) { return w.length > 2; });
-    // This needs to be done in two filters because we don't want to include
-    // those words we kulled above in the second comparison.
-    dictionary = dictionary.filter(function (p) {
-        return !dictionary.some(function (q) { q.isPrefixOf(p) });
-    });
-    return dictionary;
-};
+    var filterShortWords = R.filter(function (w) { return w.length > 2; });
+    var filterPrefixes = R.filter(function (p) {
+            return !R.any(function (q) { return isProperPrefix(p,q); },
+                dictionary);
+        });
+    return filterPrefixes(filterShortWords(dictionary))
+}
 
 // Returns an array of all the prefixes of all the words in our dictionary.
-var populatePrefixes = function (dictionary) {
-    return dictionary
-        .map(function (w) { return w.prefixes(); })
-        .flatten()
-        .uniq()
-        .sortBy(function (s) { return s.length; });
-}
+var populatePrefixes = R.compose(
+    R.sortBy(function (s) { return s.length; }),
+    R.uniq,
+    unnestMap(prefixes)
+);
 
 // Builds the whole tree from prefixes, rather than just one vertex like the
 // constructor below.
 var buildTree = function (prefixes) {
     var tree = constructTree('');
-    prefixes.each(function (p) { tree.insert(p); });
+    R.forEach(function (p) { tree.insert(p); }, prefixes);
     return tree;
 }
 
-// Constructs a tree with the specified value and empty children and colour, all
-// private.
+// Constructs a tree with the specified value and empty children and colour
 var constructTree = function (value) {
-    var children = [],
-        colour = 'none';
     return {
-        getChildren: function () { return children; },
-        getColour: function () { return colour; },
-        getValue: function () { return value; },
+        children: [],
+        colour: 'none',
+        value: value,
 
         // The insert method places a string in the tree at a vertex whose value
         // is a prefix of it, and precicely one character shorter. The resulting
@@ -82,14 +76,14 @@ var constructTree = function (value) {
         // Note also that the order in which we add our strings matters. We must
         // add from shortest to longest.
         insert: function (newValue) {
-            if (value.length = newValue.length + 1) {
-                children.push(constructTree(newValue));
+            if (newValue.length === this.value.length + 1) {
+                this.children.push(constructTree(newValue));
             }
             else {
-                children
-                    .find(function (t) {
-                        return t.getValue().isPrefixOf(newValue); })
-                    .insert(newValue);
+                R.find(
+                    function (t) { return newValue.startsWith(t.value); },
+                    this.children
+                ).insert(newValue);
             }
         },
 
