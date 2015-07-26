@@ -12,4 +12,12 @@ var isProperPrefix = function (p, q) {
     return p.length < q.length && q.startsWith(p);
 };
 
+var isLeaf = function (tree) {
+    return tree.children.length === 0;
+};
+
+var isEven = function (tree) {
+    return R.mathMod(tree.value.length, 2) === 0;
+};
+
 var unnestMap = R.compose(R.unnest, R.map);

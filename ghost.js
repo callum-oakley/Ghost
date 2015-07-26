@@ -69,7 +69,6 @@ var buildTree = function (prefixes) {
 var constructTree = function (value) {
     return {
         children: [],
-        colour: "none",
         value: value,
 
         // The insert method places a string in the tree at a vertex whose value
@@ -105,13 +104,6 @@ var constructTree = function (value) {
 var paint = function (tree) {
     var hasAnyGreen = R.any(R.propEq("colour", "green"));
     var hasAllGreen = R.all(R.propEq("colour", "green"));
-    var isLeaf = function (vertex) {
-        return vertex.children.length === 0;
-    };
-
-    var isEven = function (vertex) {
-        return R.mathMod(vertex.value.length, 2) === 0;
-    };
 
     R.forEach(paint, tree.children);
 
@@ -129,6 +121,17 @@ var paint = function (tree) {
 var makeMono = function (tree) {
     tree.children = R.filter(R.propEq("colour", tree.colour), tree.children);
     R.forEach(makeMono, tree.children);
+};
+
+// we prune each tree to produce a minimal closed set of winning words
+var prune = function (tree) {
+    R.forEach(prune, tree.children);
+    if (tree.colour === "green" && !isLeaf(tree) && isEven(tree)) {
+        var smallestBranch = R.reduce(
+
+        )
+        tree.children = [smallestBranch];
+    }
 };
 
 getDictionary("/words.txt");
