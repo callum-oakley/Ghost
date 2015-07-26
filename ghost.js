@@ -5,7 +5,7 @@
 var getDictionary = function (path) {
     var client = new XMLHttpRequest(),
         that = this;
-    client.open('GET', path);
+    client.open("GET", path);
     client.onreadystatechange = function () {
         // We wait for the dictionary to download before continuing.
         if (4 != client.readyState || 200 != client.status) {
@@ -18,20 +18,22 @@ var getDictionary = function (path) {
 
 // The meat of the solution.
 var ghost = function (dictionary) {
-    var prefixes, tree;
+    var prefixes, tree, monoTrees;
 
-    console.log('processing dictionary...');
+    console.log("processing dictionary...");
     dictionary = processDictionary(dictionary);
 
-    console.log('populating prefixes...');
+    console.log("populating prefixes...(this takes a while)");
     prefixes = populatePrefixes(dictionary);
 
-    console.log('building tree...');
+    console.log("building tree...");
     tree = buildTree(prefixes);
 
-    // vertices red or green
+    console.log("painting tree...");
+    paint(tree);
 
-    // split in to 26 monochromatic tries
+    console.log("splitting by start letter and making monochrome...")
+    monoTrees = R.forEach(makeMono, tree.children);
 
     // prune each tree dependent on colour
 
@@ -58,7 +60,7 @@ var populatePrefixes = R.compose(
 // Builds the whole tree from prefixes, rather than just one vertex like the
 // constructor below.
 var buildTree = function (prefixes) {
-    var tree = constructTree('');
+    var tree = constructTree("");
     R.forEach(function (p) { tree.insert(p); }, prefixes);
     return tree;
 }
@@ -67,7 +69,7 @@ var buildTree = function (prefixes) {
 var constructTree = function (value) {
     return {
         children: [],
-        colour: 'none',
+        colour: "none",
         value: value,
 
         // The insert method places a string in the tree at a vertex whose value
@@ -85,12 +87,48 @@ var constructTree = function (value) {
                     this.children
                 ).insert(newValue);
             }
-        },
-
-        calculateColours: function () {
-
         }
     };
 }
 
-getDictionary('/words.txt');
+// The paint function assigns a colour to a tree (and necessarily all its
+// subtrees). "green" if player 1 could force a win from it, and "red"
+// if player 2 could. Every vertex is either red or green as for each
+// vertex player 1 can only fail to force a win if player 2 can force a
+// win.
+//
+// A vertex is green if
+//  - it is an even valued leaf OR
+//  - it is an even valued vertex with at least one green child OR
+//  - it is an odd valued non leaf with only green children
+// otherwise it is red.
+var paint = function (tree) {
+    var hasAnyGreen = R.any(R.propEq("colour", "green"));
+    var hasAllGreen = R.all(R.propEq("colour", "green"));
+    var isLeaf = function (vertex) {
+        return vertex.children.length === 0;
+    };
+
+    var isEven = function (vertex) {
+        return R.mathMod(vertex.value.length, 2) === 0;
+    };
+
+    R.forEach(paint, tree.children);
+
+    if (isEven(tree) && (isLeaf(tree) || hasAnyGreen(tree.children)) ||
+    !isEven(tree) && !isLeaf(tree) && hasAllGreen(tree.children)) {
+        tree.colour = "green";
+    }
+    else {
+        tree.colour = "red";
+    }
+};
+
+// we consider the winning moves conditioned on the first move, otherwise the
+// result isn't very interesting...
+var makeMono = function (tree) {
+    tree.children = R.filter(R.propEq("colour", tree.colour), tree.children);
+    R.forEach(makeMono, tree.children);
+};
+
+getDictionary("/words.txt");
