@@ -46,6 +46,8 @@ var ghost = function (dictionary) {
 
     console.log("printing winning words...")
     R.forEach(printWinningWords, winnningWordsByStartLetter);
+
+    console.log("Done!")
 }
 
 // Delete all words of length <=2 and all unreachable words.
@@ -145,7 +147,7 @@ var prune = function (tree) {
 
     R.forEach(prune, tree.children);
 
-    // we can only prune our tree when it is the winning player's choice of
+    // We can only prune our tree when it is the winning player's choice of
     // move. Every move the opponent could make must be considered.
     if (tree.colour === "green" && !isLeaf(tree) &&  isEven(tree) ||
         tree.colour === "red"   && !isLeaf(tree) && !isEven(tree)) {
@@ -168,7 +170,8 @@ var printWinningWords = function (winningWords) {
     console.log("Starting with the letter " + winningWords.startLetter +
         ", player " + (winningWords.colour === "green" ? "1 " : "2 ") +
         "can force a win by working towards the following set of words:");
+    // We can't just use console.log here, browser has a strop. Not sure why...
     R.forEach(function (w) { console.log(w); }, winningWords.words);
 };
 
-getDictionary("/words.txt");
+getDictionary("words.txt");

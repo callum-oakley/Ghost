@@ -10,6 +10,14 @@ var prefixes = function (xs) {
     return iterate(xs.length, R.init, xs)
 };
 
+// var prefixes = function (word) {
+//     return R.map(
+//         function (i) { return word.slice(0, i); },
+//         R.range(1, word.length + 1)
+//     );
+// };
+
+
 var isProperPrefix = function (p, q) {
     return p.length < q.length && q.startsWith(p);
 };
@@ -26,3 +34,14 @@ var getLeaves = function (tree) {
     return isLeaf(tree) ?
         [tree.value] : unnestMap(getLeaves, tree.children);
 };
+
+// var fasterSortByLength = function (words) {
+//     var groupedWords = R.groupBy(R.prop("length"), words);
+//     var sortedWords = [[""]];
+//     for (var key in groupedWords) {
+//         if (groupedWords.hasOwnProperty(key)) {
+//             sortedWords[+key] = groupedWords[key];
+//         }
+//     }
+//     return R.tail(R.unnest(sortedWords));
+// };
