@@ -38,9 +38,9 @@ var ghost = function (dictionary) {
     console.log("pruning each tree...");
     R.forEach(prune, monoTrees);
 
-    console.log("retrieve winning words...");
+    console.log("retrieving winning words...");
     winnningWordsByStartLetter = R.sortBy(
-        R.prop("colour"),
+        R.prop("startLetter"),
         R.map(getWinningWords, monoTrees)
     );
 
@@ -152,7 +152,8 @@ var prune = function (tree) {
         tree.children = [findSmallestBranch(tree.children)];
     }
 
-    tree.descendantLeaves = calculateDescendantLeaves(tree.children);
+    tree.descendantLeaves = isLeaf(tree) ?
+        1 : calculateDescendantLeaves(tree.children);
 };
 
 var getWinningWords = function (tree) {
@@ -164,10 +165,10 @@ var getWinningWords = function (tree) {
 };
 
 var printWinningWords = function (winningWords) {
-    console.log("Starting with the letter " + winningWords.startLetter + ",
-    player " + (winningWords.colour === "green" ? "1 " : "2 ") + "can force a
-    win by working towards the following set of words:");
-    winningWords.forEach(console.log);
+    console.log("Starting with the letter " + winningWords.startLetter +
+        ", player " + (winningWords.colour === "green" ? "1 " : "2 ") +
+        "can force a win by working towards the following set of words:");
+    R.forEach(function (w) { console.log(w); }, winningWords.words);
 };
 
 getDictionary("/words.txt");

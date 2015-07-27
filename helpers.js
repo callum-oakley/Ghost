@@ -24,5 +24,5 @@ var isEven = function (tree) {
 
 var getLeaves = function (tree) {
     return isLeaf(tree) ?
-        [tree.value] : unnestMap(getLeaves, [], tree.children);
+        [tree.value] : unnestMap(getLeaves, tree.children);
 };
