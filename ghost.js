@@ -18,7 +18,7 @@ var getDictionary = function (path) {
 
 // The meat of the solution.
 var ghost = function (dictionary) {
-    var prefixes, tree, monoTrees;
+    var prefixes, tree, monoTrees, winnningWordsByStartLetter;
 
     console.log("processing dictionary...");
     dictionary = processDictionary(dictionary);
@@ -32,12 +32,20 @@ var ghost = function (dictionary) {
     console.log("painting tree...");
     paint(tree);
 
-    console.log("splitting by start letter and making monochrome...")
+    console.log("splitting by start letter and making monochrome...");
     monoTrees = R.forEach(makeMono, tree.children);
 
-    // prune each tree dependent on colour
+    console.log("pruning each tree...");
+    R.forEach(prune, monoTrees);
 
-    // output leaves
+    console.log("retrieve winning words...");
+    winnningWordsByStartLetter = R.sortBy(
+        R.prop("colour"),
+        R.map(getWinningWords, monoTrees)
+    );
+
+    console.log("printing winning words...")
+    R.forEach(printWinningWords, winnningWordsByStartLetter);
 }
 
 // Delete all words of length <=2 and all unreachable words.
@@ -145,6 +153,21 @@ var prune = function (tree) {
     }
 
     tree.descendantLeaves = calculateDescendantLeaves(tree.children);
+};
+
+var getWinningWords = function (tree) {
+    return {
+        colour: tree.colour,
+        startLetter: tree.value,
+        words: getLeaves(tree)
+    };
+};
+
+var printWinningWords = function (winningWords) {
+    console.log("Starting with the letter " + winningWords.startLetter + ",
+    player " + (winningWords.colour === "green" ? "1 " : "2 ") + "can force a
+    win by working towards the following set of words:");
+    winningWords.forEach(console.log);
 };
 
 getDictionary("/words.txt");
