@@ -125,13 +125,26 @@ var makeMono = function (tree) {
 
 // we prune each tree to produce a minimal closed set of winning words
 var prune = function (tree) {
-    R.forEach(prune, tree.children);
-    if (tree.colour === "green" && !isLeaf(tree) && isEven(tree)) {
-        var smallestBranch = R.reduce(
+    var calculateDescendantLeaves =  R.compose(
+        R.sum,
+        R.pluck("descendantLeaves")
+    );
 
-        )
-        tree.children = [smallestBranch];
+    var findSmallestBranch = R.reduce(
+        R.minBy(R.prop("descendantLeaves")),
+        R.head(tree.children)
+    );
+
+    R.forEach(prune, tree.children);
+
+    // we can only prune our tree when it is the winning player's choice of
+    // move. Every move the opponent could make must be considered.
+    if (tree.colour === "green" && !isLeaf(tree) &&  isEven(tree) ||
+        tree.colour === "red"   && !isLeaf(tree) && !isEven(tree)) {
+        tree.children = [findSmallestBranch(tree.children)];
     }
+
+    tree.descendantLeaves = calculateDescendantLeaves(tree.children);
 };
 
 getDictionary("/words.txt");
