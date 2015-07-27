@@ -75,7 +75,7 @@ var buildTree = function (prefixes) {
     return tree;
 }
 
-// Constructs a tree with the specified value and empty children and colour
+// Constructs a tree with the specified value and empty children.
 var constructTree = function (value) {
     return {
         children: [],
