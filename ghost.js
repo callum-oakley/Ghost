@@ -11,7 +11,7 @@ var getDictionary = function (path) {
         if (4 != client.readyState || 200 != client.status) {
             return;
         }
-        ghost(client.responseText.split('\n'));
+        ghost(R.sortBy(R.identity, client.responseText.split('\n')));
     };
     client.send();
 };
@@ -23,7 +23,7 @@ var ghost = function (dictionary) {
     console.log("processing dictionary...");
     dictionary = processDictionary(dictionary);
 
-    console.log("populating prefixes...(this takes a while)");
+    console.log("populating prefixes...");
     prefixes = populatePrefixes(dictionary);
 
     console.log("building tree...");
@@ -48,17 +48,26 @@ var ghost = function (dictionary) {
     R.forEach(printWinningWords, winnningWordsByStartLetter);
 
     console.log("Done!")
-}
+};
 
 // Delete all words of length <=2 and all unreachable words.
+// todo: Can optimise this too if we assume our dictionary is sorted, words that
+// contain other words as prefixes will appear grouped together.
+// var processDictionary = function (dictionary) {
+//     var filterShortWords = R.filter(function (w) { return w.length > 2; });
+//     var filterPrefixes = R.filter(function (p) {
+//             return !R.any(function (q) { return isProperPrefix(p,q); },
+//                 dictionary);
+//         });
+//     return filterPrefixes(filterShortWords(dictionary));
+// }
 var processDictionary = function (dictionary) {
-    var filterShortWords = R.filter(function (w) { return w.length > 2; });
-    var filterPrefixes = R.filter(function (p) {
-            return !R.any(function (q) { return isProperPrefix(p,q); },
-                dictionary);
-        });
-    return R.sortBy(R.identity, filterPrefixes(filterShortWords(dictionary)));
-}
+    for (var i = 0; i < dictionary.length; i++) {
+        if (dictionary[i].length <= 2) {
+            dictionary[i]
+        }
+    }
+};
 
 // Returns an array of all the prefixes of all the words in our dictionary.
 // This is how we would like to implement this...
@@ -199,4 +208,5 @@ var printWinningWords = function (winningWords) {
     R.forEach(function (w) { console.log(w); }, winningWords.words);
 };
 
-getDictionary("words.txt");
+console.log("getting dictionary...");
+getDictionary("dictionary.txt");
