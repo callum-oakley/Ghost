@@ -57,15 +57,40 @@ var processDictionary = function (dictionary) {
             return !R.any(function (q) { return isProperPrefix(p,q); },
                 dictionary);
         });
-    return filterPrefixes(filterShortWords(dictionary))
+    return R.sortBy(R.identity, filterPrefixes(filterShortWords(dictionary)));
 }
 
 // Returns an array of all the prefixes of all the words in our dictionary.
-var populatePrefixes = R.compose(
-    R.sortBy(function (s) { return s.length; }),
-    R.uniq,
-    unnestMap(prefixes)
-);
+// This is how we would like to implement this...
+// var populatePrefixes = R.compose(
+//     R.sortBy(function (s) { return s.length; }),
+//     R.uniq,
+//     unnestMap(prefixes)
+// );
+// ...but this is a lot faster:
+// We rely on the fact that our input is sorted alphabetically, and carefully
+// build our list of prefixes without duplication and in order of length.
+var populatePrefixes = function (dictionary) {
+    var prefixes = [];
+    var lastAddition = "";
+    var charsToTake = 1;
+    var done = false;
+    while (!done) {
+        done = true;
+        for (var i = 0; i < dictionary.length; i++) {
+            if (dictionary[i].length > charsToTake) {
+                done = false;
+            }
+            if (dictionary[i].length >= charsToTake &&
+                dictionary[i].slice(0, charsToTake) != lastAddition) {
+                lastAddition = dictionary[i].slice(0, charsToTake);
+                prefixes.push(lastAddition);
+            }
+        }
+        charsToTake++;
+    }
+    return prefixes;
+};
 
 // Builds the whole tree from prefixes, rather than just one vertex like the
 // constructor below.
