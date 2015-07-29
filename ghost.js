@@ -51,8 +51,9 @@ var ghost = function (dictionary) {
 };
 
 // Delete all words of length <=2 and all unreachable words.
-// todo: Can optimise this too if we assume our dictionary is sorted, words that
-// contain other words as prefixes will appear grouped together.
+// Old slow code. Kept in comments because it's pretty, and I wish it wasn't so
+// slow :(
+
 // var processDictionary = function (dictionary) {
 //     var filterShortWords = R.filter(function (w) { return w.length > 2; });
 //     var filterPrefixes = R.filter(function (p) {
@@ -61,21 +62,44 @@ var ghost = function (dictionary) {
 //         });
 //     return filterPrefixes(filterShortWords(dictionary));
 // }
+
+// new fast code:
 var processDictionary = function (dictionary) {
+    var currentLetter = "";
     for (var i = 0; i < dictionary.length; i++) {
+        // progress tracking!
+        if (dictionary[i][0] != currentLetter) {
+            currentLetter = dictionary[i][0];
+            console.log("pocessing words beginning with " + currentLetter);
+        }
+        // remove short words
         if (dictionary[i].length <= 2) {
-            dictionary[i]
+            dictionary.splice(i--, 1);
+            continue;
+        }
+        // scan forwards removing all words that would be unreachable because
+        // the current word would have ended the game
+        while (true) {
+            if (i + 1 < dictionary.length &&
+            dictionary[i + 1].startsWith(dictionary[i])) {
+                dictionary.splice(i + 1, 1);
+                continue;
+            }
+            break;
         }
     }
+    return dictionary;
 };
 
 // Returns an array of all the prefixes of all the words in our dictionary.
 // This is how we would like to implement this...
+
 // var populatePrefixes = R.compose(
 //     R.sortBy(function (s) { return s.length; }),
 //     R.uniq,
 //     unnestMap(prefixes)
 // );
+
 // ...but this is a lot faster:
 // We rely on the fact that our input is sorted alphabetically, and carefully
 // build our list of prefixes without duplication and in order of length.
