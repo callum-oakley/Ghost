@@ -70,7 +70,7 @@ var processDictionary = function (dictionary) {
         // progress tracking!
         if (dictionary[i][0] != currentLetter) {
             currentLetter = dictionary[i][0];
-            console.log("pocessing words beginning with " + currentLetter);
+            console.log("    processing words beginning with " + currentLetter);
         }
         // remove short words
         if (dictionary[i].length <= 2) {
@@ -229,7 +229,7 @@ var printWinningWords = function (winningWords) {
         ", player " + (winningWords.colour === "green" ? "1 " : "2 ") +
         "can force a win by working towards the following set of words:");
     // We can't just use console.log here, browser has a strop. Not sure why...
-    R.forEach(function (w) { console.log(w); }, winningWords.words);
+    R.forEach(function (w) { console.log("    " + w); }, winningWords.words);
 };
 
 console.log("getting dictionary...");
